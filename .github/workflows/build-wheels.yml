@@ -12,7 +12,6 @@ permissions:
   contents: read
 
 jobs:
-jobs:
   build_wheels:
     name: Build wheels (${{ matrix.os }})
     runs-on: ${{ matrix.runs-on }}
