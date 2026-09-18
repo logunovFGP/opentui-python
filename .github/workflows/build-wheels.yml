@@ -44,7 +44,7 @@ jobs:
         uses: astral-sh/setup-uv@v4
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.22.0
+        uses: pypa/cibuildwheel@v4.2.1
         env:
           CIBW_BUILD: "cp312-* cp313-* cp314-*"
           CIBW_SKIP: "*-manylinux_i686 *-musllinux_*"
