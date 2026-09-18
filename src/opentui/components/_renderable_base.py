@@ -572,6 +572,34 @@ class BaseRenderable:
     def get_children_count(self) -> int:
         return len(self._children)
 
+    def subtree_extent_y(self) -> int:
+        """The bottom edge of this node's whole laid-out subtree, from its own top.
+
+        Normally identical to ``layout_height``: a correctly laid-out container is
+        at least as tall as everything inside it, so the ``max`` below never picks
+        a child. It stops being identical when Yoga reports a height that its own
+        children overflow -- observed on tall scroll transcripts, where a column of
+        500 children laid out contiguously down to row 5694 reported a height of
+        5420, leaving the last ~35 children below anything ``scroll_height`` could
+        reach. Callers that need the real extent of scrollable content should use
+        this instead of the height.
+
+        Ported from opentui core's ``Renderable.getSubtreeExtentY()``
+        (logunovFGP/opentui @ 2837b796).
+        """
+        extent = self._layout_height
+        for child in self._children:
+            if child._destroyed or not child.visible:
+                continue
+            # `_y - self._y`, not the bare `_y` the TypeScript original uses: there
+            # `_y` is relative to the parent, here `apply_renderable_layout` stores
+            # an absolute row. Adding it unadjusted double-counts every level --
+            # a 9-row content whose third child sits at row 7 measured 16.
+            child_extent = (child._y - self._y) + child._translate_y + child.subtree_extent_y()
+            if child_extent > extent:
+                extent = child_extent
+        return extent
+
     def contains_point(self, x: int, y: int) -> bool:
         w, h = self._layout_width, self._layout_height
         return w > 0 and h > 0 and self._x <= x < self._x + w and self._y <= y < self._y + h

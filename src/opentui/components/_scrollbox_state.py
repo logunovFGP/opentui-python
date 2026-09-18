@@ -42,9 +42,17 @@ def viewport_inner_size(scrollbox: Any) -> tuple[int, int]:
 
 def measure_content(scrollbox: Any) -> tuple[int, int]:
     content = scrollbox._scroll_content
+    # Height is the subtree extent, not the content node's own height: when Yoga
+    # reports a height its children overflow, those rows are laid out and painted
+    # but sit below scroll_height, so nothing can scroll to them and
+    # sticky_start="bottom" pins short of the real bottom. The extent equals the
+    # height whenever the layout is sound, so this only corrects the broken case.
+    # Width is unchanged -- the horizontal bar has never shown the defect.
+    extent = getattr(content, "subtree_extent_y", None)
+    height = extent() if extent is not None else int(getattr(content, "_layout_height", 0) or 0)
     return (
         int(getattr(content, "_layout_width", 0) or 0),
-        int(getattr(content, "_layout_height", 0) or 0),
+        int(height or 0),
     )
 
 
