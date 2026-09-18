@@ -47,7 +47,7 @@ jobs:
         uses: pypa/cibuildwheel@v4.2.1
         env:
           CIBW_BUILD: "cp312-* cp313-* cp314-*"
-          CIBW_SKIP: "*-manylinux_i686 *-musllinux_*"
+          CIBW_SKIP: "*-manylinux_i686 *-musllinux_* cp314-macosx_arm64"
           CIBW_ARCHS_LINUX: ${{ matrix.cibw_archs }}
           CIBW_ARCHS_MACOS: ${{ matrix.cibw_archs }}
           CIBW_ARCHS_WINDOWS: ${{ matrix.cibw_archs }}
@@ -67,6 +67,10 @@ jobs:
           GIT_TERMINAL_PROMPT: "0"
           CIBW_BUILD_FRONTEND: "build[uv]"
           CIBW_BUILD_VERBOSITY: "1"
+          # cibuildwheel 4.x runs delvewheel by default; 2.22.0 did not, and the
+          # package already carries opentui.dll itself, so the repair step only
+          # fails looking for a library it is not meant to vendor.
+          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: ""
 
       - uses: actions/upload-artifact@v4
         with:
